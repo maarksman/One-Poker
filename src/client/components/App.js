@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
-import './app.css';
+import './../styles/app.css';
+import io from 'socket.io-client';
+
+const testsocket = io.connect('http://localhost:8080');
 
 export default class App extends Component {
   constructor(props) {
@@ -7,11 +10,6 @@ export default class App extends Component {
     this.state = { username: null };
   }
 
-  componentDidMount() {
-    fetch('/api/getUsername')
-      .then(res => res.json())
-      .then(user => this.setState({ username: user.username }));
-  }
 
   render() {
     return (
