@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import './../styles/app.css';
-import io from 'socket.io-client';
+import ChatRoom from './chatroom';
 
-const testsocket = io.connect('http://localhost:8080');
+
 
 export default class App extends Component {
   constructor(props) {
@@ -19,6 +19,7 @@ export default class App extends Component {
         ) : (
           <h1>Loading.. please wait!</h1>
         )}
+        <ChatRoom />
       </div>
     );
   }
