@@ -7,23 +7,32 @@ export default class ChatRoom extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {chat_history: ['starter message'], typed: ''};
+    this.state = {chat_history: [], typed: '', chat_id: undefined};
     this.onChatSubmit = this.onChatSubmit.bind(this);
     this.onInputChange = this.onInputChange.bind(this);
   }
 
-  ComponentDidMOunt() {
+  componentDidMount() {
     const testsocket = io.connect('http://localhost:8080');
-    testsocket.on('connect', () => {console.log('connected to server');});
+    testsocket.on('connect', () => {
+      console.log('connected to server with id:', testsocket.id);
+      this.setState({chat_id: testsocket.id});
+    });
   }
 
   onChatSubmit(event) {
-    var newarray = this.state.chat_history.concat(this.state.typed)
-    event.preventDefault();
-    //alter state to add message history
-    //alert('Submitted:' + this.state.typed);
-    this.setState({chat_history: newarray})
-    this.setState({typed:''});
+    if (!this.state.chat_id) {
+      return;
+    }
+    else {
+      let sendmessage = `${this.state.chat_id}: ${this.state.typed}`
+      var newarray = this.state.chat_history.concat(sendmessage)
+      event.preventDefault();
+      //alter state to add message history
+      //alert('Submitted:' + this.state.typed);
+      this.setState({chat_history: newarray})
+      this.setState({typed:''});
+      }
   }
 
   onInputChange(event) {
