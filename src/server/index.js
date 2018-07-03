@@ -17,6 +17,12 @@ app.get('/api/getUsername', (req, res) => res.send({ username: os.userInfo().use
 
 socketio.on('connection', (client) => {
   console.log('Connected Successfully to socket! Id is:', client.id);
+   client.join('gamechat');
+
+  client.on('message', (data) => {
+    console.log('message received! data is: ', data);
+    socketio.to('gamechat').emit('receivemessage', data.msg );
+  });
 
   //client.on('join', handleJoin);
 
