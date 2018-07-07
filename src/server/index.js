@@ -22,6 +22,15 @@ socketio.on('connection', (client) => {
   client.on('message', (data) => {
     console.log('message received! data is: ', data);
     socketio.to('gamechat').emit('receivemessage', data.msg );
+    //console.log(client);
+    var room = socketio.sockets.adapter.rooms['gamechat'];
+    console.log('num users is: ', room.length);
+  });
+
+  client.on('cardselect', (data) => {
+    let tosend = `${data.senderid} selected card: ${data.card}`;
+    socketio.to('gamechat').emit('receivemessage', tosend );
+
   });
 
   //client.on('join', handleJoin);
