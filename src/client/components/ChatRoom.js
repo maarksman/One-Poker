@@ -8,10 +8,11 @@ export default class ChatRoom extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {chat_history: [], typed: '', chat_id: undefined, num_in_chat: 0};
+    this.state = {chat_history: [], typed: '', chat_id: undefined, cards:['No value', 'No value']};
     this.onChatSubmit = this.onChatSubmit.bind(this);
     this.onInputChange = this.onInputChange.bind(this);
     this.onCardSelect = this.onCardSelect.bind(this);
+    this.beginGame = this.beginGame.bind(this);
     const socket = io('http://localhost:8080');
     this.socket = socket;
   }
@@ -27,10 +28,10 @@ export default class ChatRoom extends Component {
         console.log('Disconnected from server');
       });
 
-      this.socket.on('playerstate', (num) => {
-        if (num == 2) {
-          this.socket.emit('gamestart');
-        }
+      this.socket.on('dealcards', (cardlist) => {
+        console.log('Got playerstate of: ', cardlist);
+        this.setState({cards: cardlist[this.socket.id]});
+        console.log('this.state.cards is now: ', this.state.cards);
       });
 
       //handle receiving messages
@@ -70,6 +71,10 @@ export default class ChatRoom extends Component {
     this.socket.emit('cardselect', {senderid: this.socket.id, card: cardvalue} )
   }
 
+  beginGame(event) {
+    this.socket.emit('gamestart');
+  }
+
   render() {
     return (
       <div className="testgame">
@@ -86,8 +91,9 @@ export default class ChatRoom extends Component {
             <button type="submit">Submit</button>
           </form>
         </div>
-        <button data-value='Card 1' onClick={this.onCardSelect}>Card 1</button>
-        <button data-value="Card 2" onClick={this.onCardSelect}>Card 2</button>
+        <button data-value={this.state.cards[0]} onClick={this.onCardSelect}>Card 1</button>
+        <button data-value={this.state.cards[1]} onClick={this.onCardSelect}>Card 2</button>
+        <button onClick={this.beginGame}>Start Game!</button>
       </div>
     );
   }
