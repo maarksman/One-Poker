@@ -30,13 +30,17 @@ export default class ChatRoom extends Component {
 
       this.socket.on('dealcards', (cardlist) => {
         console.log('Got playerstate of: ', cardlist);
-        this.setState({cards: cardlist[this.socket.id]});
+        this.setState({cards: cardlist[this.state.chat_id]});
         console.log('this.state.cards is now: ', this.state.cards);
       });
 
       //handle receiving messages
       this.socket.on('receivemessage', (text) => {
         this.setState({chat_history: this.state.chat_history.concat(text)});
+      });
+
+      this.socket.on('cardpicked', (data) => {
+        this.socket.emit('opponentplay', data);
       });
 
     });
@@ -68,7 +72,7 @@ export default class ChatRoom extends Component {
     //event.preventDefault();
     let cardvalue = event.target.getAttribute('data-value');
     console.log('card is', cardvalue );
-    this.socket.emit('cardselect', {senderid: this.socket.id, card: cardvalue} )
+    this.socket.emit('cardselect', {senderid: this.socket.id, card: cardvalue} );
   }
 
   beginGame(event) {
@@ -91,8 +95,12 @@ export default class ChatRoom extends Component {
             <button type="submit">Submit</button>
           </form>
         </div>
-        <button data-value={this.state.cards[0]} onClick={this.onCardSelect}>Card 1</button>
-        <button data-value={this.state.cards[1]} onClick={this.onCardSelect}>Card 2</button>
+        <button data-value={this.state.cards[0]} onClick={this.onCardSelect}>
+          {this.state.cards[0]}
+        </button>
+        <button data-value={this.state.cards[1]} onClick={this.onCardSelect}>
+          {this.state.cards[1]}
+        </button>
         <button onClick={this.beginGame}>Start Game!</button>
       </div>
     );
