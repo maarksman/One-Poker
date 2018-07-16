@@ -8,7 +8,11 @@ export default class ChatRoom extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {chat_history: [], typed: '', chat_id: undefined, cards:['No value', 'No value']};
+    this.state = {chat_history: [], typed: '',
+                  chat_id: undefined,
+                  playerstate: {hand:[undefined, undefined],
+                  selected: undefined, tucked: undefined}
+                  };
     this.onChatSubmit = this.onChatSubmit.bind(this);
     this.onInputChange = this.onInputChange.bind(this);
     this.onCardSelect = this.onCardSelect.bind(this);
@@ -28,10 +32,10 @@ export default class ChatRoom extends Component {
         console.log('Disconnected from server');
       });
 
-      this.socket.on('dealcards', (cardlist) => {
-        console.log('Got playerstate of: ', cardlist);
-        this.setState({cards: cardlist[this.state.chat_id]});
-        console.log('this.state.cards is now: ', this.state.cards);
+      this.socket.on('dealcards', (newstate) => {
+        console.log('Got playerstate of: ', newstate);
+        this.setState({playerstate: newstate});
+        console.log('this.state.playerstate is now: ', this.state.playerstate);
       });
 
       //handle receiving messages
@@ -70,9 +74,21 @@ export default class ChatRoom extends Component {
 
   onCardSelect(event) {
     //event.preventDefault();
-    let cardvalue = event.target.getAttribute('data-value');
+    let cardvalue = parseInt(event.target.getAttribute('data-value'));
+    let tosend = {senderid: this.socket.id, playerstate: {selected: undefined,
+                  tucked: undefined, hand: this.state.playerstate.hand} }
     console.log('card is', cardvalue );
-    this.socket.emit('cardselect', {senderid: this.socket.id, card: cardvalue} );
+    //find tucked card
+    let thehand = tosend.playerstate.hand.slice();
+    console.log('thehand is: ', thehand);
+    let selectedindex = thehand.indexOf(cardvalue);
+    thehand.splice(selectedindex, 1);
+    console.log('the hand is now: ', thehand);
+    let tucked = thehand[0];
+    tosend.playerstate.selected = cardvalue;
+    tosend.playerstate.tucked = tucked;
+    console.log('Send this to server cardselect listener; ', tosend);
+    this.socket.emit('cardselect', tosend );
   }
 
   beginGame(event) {
@@ -95,11 +111,11 @@ export default class ChatRoom extends Component {
             <button type="submit">Submit</button>
           </form>
         </div>
-        <button data-value={this.state.cards[0]} onClick={this.onCardSelect}>
-          {this.state.cards[0]}
+        <button data-value={this.state.playerstate.hand[0]} onClick={this.onCardSelect}>
+          {this.state.playerstate.hand[0]}
         </button>
-        <button data-value={this.state.cards[1]} onClick={this.onCardSelect}>
-          {this.state.cards[1]}
+        <button data-value={this.state.playerstate.hand[1]} onClick={this.onCardSelect}>
+          {this.state.playerstate.hand[1]}
         </button>
         <button onClick={this.beginGame}>Start Game!</button>
       </div>
